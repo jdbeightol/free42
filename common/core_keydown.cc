@@ -323,6 +323,13 @@ void keydown_number_entry(int shift, int key) {
     }
 
     if (key == KEY_BSP) {
+        if (cmdline[cmdline_length - 1] == '/') {
+            for (int i = 0; i < cmdline_length; i++)
+                if (cmdline[i] == ' ') {
+                    cmdline[i] = '.';
+                    break;
+                }
+        }
         cmdline_length--;
         if (!flags.f.prgm_mode && base == 10)
             fix_thousands_separators(cmdline, &cmdline_length);
@@ -433,17 +440,27 @@ void keydown_number_entry(int shift, int key) {
             /* Only allow dot if there isn't one already, and
              * there is no exponent either
              */
-            int dot_or_exp_pos = -1;
+            int dot_pos = -1;
+            int space_pos = -1;
+            int exp_and_slash_pos = -1;
             int i;
             char dot = flags.f.decimal_point ? '.' : ',';
             for (i = 0; i < cmdline_length; i++)
-                if (cmdline[i] == dot || cmdline[i] == 24) {
-                    dot_or_exp_pos = i;
+                if (cmdline[i] == '/' || cmdline[i] == 24) {
+                    exp_and_slash_pos = i;
                     break;
+                } else if (cmdline[i] == dot) {
+                    dot_pos = i;
+                    break;
+                } else if (cmdline[i] == ' ') {
+                    space_pos = i;
                 }
-            if (dot_or_exp_pos == -1)
+            if (dot_pos == -1 && exp_and_slash_pos == -1)
                 cmdline[cmdline_length++] = dot;
-            else
+            else if (dot_pos != -1 && exp_and_slash_pos == -1 && space_pos != i - i) {
+                cmdline[dot_pos] = ' ';
+                cmdline[cmdline_length++] = '/';
+            } else 
                 return;
         }
     } else /* KEY_0 .. KEY_9 or hex A-F */ {

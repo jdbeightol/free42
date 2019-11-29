@@ -466,13 +466,13 @@ int return_to_solve(int failure, bool stop) {
         int bufptr = 0, i;
         solve.last_disp_time = now_time;
         clear_display();
-        bufptr = phloat2string(solve.curr_x, buf, 22, 0, 0, 3,
+        bufptr = phloat2string(solve.curr_x, buf, 22, 0, 0, 3, flags.f.sym,
                                     flags.f.thousands_separators);
         for (i = bufptr; i < 21; i++)
             buf[i] = ' ';
         buf[21] = failure ? '?' : solve.curr_f > 0 ? '+' : '-';
         draw_string(0, 0, buf, 22);
-        bufptr = phloat2string(solve.prev_x, buf, 22, 0, 0, 3,
+        bufptr = phloat2string(solve.prev_x, buf, 22, 0, 0, 3, flags.f.sym,
                                     flags.f.thousands_separators);
         for (i = bufptr; i < 21; i++)
             buf[i] = ' ';

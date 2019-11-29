@@ -1092,7 +1092,9 @@ int vartype2string(const vartype *v, char *buf, int buflen, int max_mant_digits)
     int dispmode;
     int digits = 0;
 
-    if (flags.f.fix_or_all)
+    if (flags.f.frac)
+        dispmode = 4;
+    else if (flags.f.fix_or_all)
         dispmode = flags.f.eng_or_all ? 3 : 0;
     else
         dispmode = flags.f.eng_or_all ? 2 : 1;
@@ -1109,7 +1111,7 @@ int vartype2string(const vartype *v, char *buf, int buflen, int max_mant_digits)
 
         case TYPE_REAL:
             return phloat2string(((vartype_real *) v)->x, buf, buflen,
-                                 1, digits, dispmode,
+                                 1, digits, dispmode, flags.f.sym,
                                  flags.f.thousands_separators,
                                  max_mant_digits);
 
@@ -1132,22 +1134,22 @@ int vartype2string(const vartype *v, char *buf, int buflen, int max_mant_digits)
             }
 
             x_len = phloat2string(x, x_buf, 22,
-                                  0, digits, dispmode,
+                                  0, digits, dispmode, flags.f.sym,
                                   flags.f.thousands_separators,
                                   max_mant_digits);
             y_len = phloat2string(y, y_buf, 22,
-                                  0, digits, dispmode,
+                                  0, digits, dispmode, flags.f.sym,
                                   flags.f.thousands_separators,
                                   max_mant_digits);
 
             if (x_len + y_len + 2 > buflen) {
                 /* Too long? Fall back on ENG 2 */
                 x_len = phloat2string(x, x_buf, 22,
-                                      0, 2, 2,
+                                      0, 2, 2, flags.f.sym,
                                       flags.f.thousands_separators,
                                       max_mant_digits);
                 y_len = phloat2string(y, y_buf, 22,
-                                      0, 2, 2,
+                                      0, 2, 2, flags.f.sym,
                                       flags.f.thousands_separators,
                                       max_mant_digits);
             }
@@ -1241,8 +1243,8 @@ char *phloat2program(phloat d) {
     char dot = flags.f.decimal_point ? '.' : ',';
     int decimal, zeroes, last_nonzero, exponent;
     int i;
-    alllen = phloat2string(d, allbuf, 49, 0, 0, 3, 0, MAX_MANT_DIGITS);
-    scilen = phloat2string(d, scibuf, 49, 0, MAX_MANT_DIGITS - 1, 1, 0, MAX_MANT_DIGITS);
+    alllen = phloat2string(d, allbuf, 49, 0, 0, 3, 0, 0, MAX_MANT_DIGITS);
+    scilen = phloat2string(d, scibuf, 49, 0, MAX_MANT_DIGITS - 1, 1, 0, 0, MAX_MANT_DIGITS);
     /* Shorten SCI representation by removing trailing zeroes,
      * and decreasing the exponent until the decimal point
      * shifts out of the mantissa.
@@ -1326,7 +1328,9 @@ int easy_phloat2string(phloat d, char *buf, int buflen, int base_mode) {
     int dispmode;
     int digits = 0;
 
-    if (flags.f.fix_or_all)
+    if (flags.f.frac)
+        dispmode = 4;
+    else if (flags.f.fix_or_all)
         dispmode = flags.f.eng_or_all ? 3 : 0;
     else
         dispmode = flags.f.eng_or_all ? 2 : 1;
@@ -1340,7 +1344,7 @@ int easy_phloat2string(phloat d, char *buf, int buflen, int base_mode) {
         digits += 1;
 
     return phloat2string(d, buf, buflen, base_mode,
-                         digits, dispmode, flags.f.thousands_separators);
+                         digits, dispmode, flags.f.sym, flags.f.thousands_separators);
 }
 
 int ip2revstring(phloat d, char *buf, int buflen) {

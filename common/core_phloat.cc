@@ -114,15 +114,67 @@ int string2phloat(const char *buf, int buflen, phloat *d) {
     // strip thousands separators, convert comma to dot if
     // appropriate, and convert char(24) to 'E'.
     // Also, reject numbers with more than MAX_MANT_DIGITS digits in the mantissa.
+    char internal_buffer[MAX_MANT_DIGITS];
+    int internal_buffer_len;
     char buf2[100];
     int buflen2 = 0;
+    char dot = flags.f.decimal_point ? '.' : ',';
     char sep = flags.f.decimal_point ? ',' : '.';
     int mantdigits = 0;
     int expdigits = 0;
     bool in_mant = true;
     bool zero = true;
+
+    int space_pos = -1;
+    int slash_pos = -1;
     for (int i = 0; i < buflen; i++) {
         char c = buf[i];
+        if(c == ' ')
+            space_pos = i;
+        else if (c == '/')
+            slash_pos = i;
+    }
+
+    // Exit early if the last character was a slash.
+    if (slash_pos == buflen - 1) {
+        return 1;
+    }
+
+    // TODO -- we should be able to have more than 15 digits of precision here.
+    // This can definitely be improved.
+    if (space_pos != -1 && slash_pos != -1) {
+        char ip[space_pos - 1];
+        char n[slash_pos - space_pos - 1];
+        char d[buflen - slash_pos];
+        int pos = 0;
+        for (int i = 0; i <= space_pos;i++) {
+            // We don't allow dots or commas as part of fractions.
+            if (buf[i] == sep || buf[i] == dot)
+                continue;
+            ip[pos++] = buf[i];
+        }
+        for (int i = space_pos+1; i < slash_pos; i++) {
+            n[i - space_pos - 1] = buf[i];
+        }
+        for (int i = slash_pos + 1; i < buflen; i++) {
+            d[i - slash_pos - 1] = buf[i];
+        }
+        double fl = atof(ip) + atof(n) / atof(d);
+        int l = sprintf(internal_buffer, "%0.15f", fl);
+        internal_buffer_len = l;
+        if (!flags.f.decimal_point) {
+            for (int i = 0; i < internal_buffer_len; i++) {
+                if (internal_buffer[i] == sep)
+                    internal_buffer[i] = dot;
+            }
+        }
+    } else {
+        strcpy(internal_buffer, buf);
+        internal_buffer_len = buflen;
+    }
+
+    for (int i = 0; i < internal_buffer_len; i++) {
+        char c = internal_buffer[i];
         if (c == sep)
             continue;
         if (c == ',')
@@ -796,6 +848,8 @@ int string2phloat(const char *buf, int buflen, phloat *d) {
      * 4: negative underflow
      * 5: other error
      */
+    char internal_buffer[MAX_MANT_DIGITS];
+    int internal_buffer_len = 0;
     char mantissa[16] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
     int mant_sign = 0;
     int skipping_zeroes = 1;
@@ -811,8 +865,53 @@ int string2phloat(const char *buf, int buflen, phloat *d) {
     int is_zero = 1;
     double res;
 
+    int space_pos = -1;
+    int slash_pos = -1;
     for (i = 0; i < buflen; i++) {
         char c = buf[i];
+        if(c == ' ')
+            space_pos = i;
+        else if (c == '/')
+            slash_pos = i;
+    }
+
+    // Exit early if the last character was a slash.
+    if (slash_pos == buflen - 1) {
+        return 1;
+    }
+
+    if (space_pos != -1 && slash_pos != -1) {
+        char ip[space_pos - 1];
+        char n[slash_pos - space_pos - 1];
+        char d[buflen - slash_pos];
+        int pos = 0;
+        for (int i = 0; i <= space_pos; i++) {
+            if (buf[i] == sep || buf[i] == dot)
+                continue;
+            ip[pos] = buf[i];
+        }
+        for (int i = space_pos+1; i < slash_pos; i++) {
+            n[i - space_pos - 1] = buf[i];
+        }
+        for (int i = slash_pos + 1; i < buflen; i++) {
+            d[i - slash_pos - 1] = buf[i];
+        }
+        double fl = atof(ip) + atof(n) / atof(d);
+        int l = sprintf(internal_buffer, "%0.15f", fl);
+        internal_buffer_len = l;
+        if (!flags.f.decimal_point) {
+            for (int i = 0; i < internal_buffer_len; i++) {
+                if (internal_buffer[i] == sep)
+                    internal_buffer[i] = dot;
+            }
+        }
+    } else {
+        strcpy(internal_buffer, buf);
+        internal_buffer_len = buflen;
+    }
+
+    for (i = 0; i < internal_buffer_len; i++) {
+        char c = internal_buffer[i];
         if (c == 24) {
             in_exp = 1;
             if (mant_digits == 0) {
@@ -965,9 +1064,9 @@ double decimal2double(void *data, bool pin_magnitude /* = false */) {
 //#define P2S_MAX_BIN  34359738367.0
 //#define P2S_MIN_BIN -34359738368.0
 
-
 int phloat2string(phloat pd, char *buf, int buflen, int base_mode, int digits,
-                         int dispmode, int thousandssep, int max_mant_digits) {
+                         int dispmode, int symdisp, int thousandssep,
+                         int max_mant_digits) {
     if (pd == 0)
         pd = 0; // Suppress signed zero
 
@@ -1088,7 +1187,62 @@ int phloat2string(phloat pd, char *buf, int buflen, int base_mode, int digits,
     int max_int_digits = max_mant_digits;
     int max_frac_digits = MAX_MANT_DIGITS + max_int_digits - 1;
 
-    if (dispmode == 0 || dispmode == 3) {
+    // TODO -- we want to replace these with real symbols
+    // TODO -- we want to account for error...
+    if (symdisp) {
+        int chars_so_far = 0;
+        // Some common pi representations.
+        if ( PI == pd)
+            string2buf(buf, buflen, &chars_so_far, "PI", 2);
+        if (2.0 * PI == pd)
+            string2buf(buf, buflen, &chars_so_far, "2PI", 3);
+        if (3.0 * PI / 2.0 == pd)
+            string2buf(buf, buflen, &chars_so_far, "3PI/2", 5);
+        if (PI / 2.0 == pd)
+            string2buf(buf, buflen, &chars_so_far, "PI/2", 4);
+        
+        // Some common square roots.
+        if (pd * pd == 2)
+            string2buf(buf, buflen, &chars_so_far, "SQRT(2)", 7);
+        if (pd * pd == 10)
+            string2buf(buf, buflen, &chars_so_far, "SQRT(10))", 8);
+        if (chars_so_far > 0)
+            return chars_so_far;
+    }
+
+    if (dispmode == 4) {
+
+        /* Fraction mode */
+
+        int ip = to_int(pd);
+        double fp = to_double(pd) - (double)ip;
+
+        if (fp < FRACTION_LIMIT || 1 - FRACTION_LIMIT < fp)
+            return phloat2string(pd, buf, buflen, base_mode, digits, 3, symdisp, thousandssep, max_mant_digits);
+
+        int ln = 0, nom = 0, dnm = 0, ld = 1, un = 1, ud = 1;
+        while(true) {
+            int mn = ln + un;
+            int md = ld + ud;
+            if (md * (fp + FRACTION_LIMIT) < mn) {
+                un = mn;
+                ud = md;
+            } else if (mn < (fp - FRACTION_LIMIT) * md) {
+                ln = mn;
+                ld = md;
+            } else {
+                nom = mn;
+                dnm = md;
+                break;
+            }
+        }
+        char s[MAX_MANT_DIGITS];
+        int n = sprintf(s, "%d %d/%d", ip, nom, dnm);
+        string2buf(buf, buflen, &chars_so_far, s, n);
+
+        return chars_so_far;
+
+    } else if (dispmode == 0 || dispmode == 3) {
 
         /* FIX and ALL modes */
 

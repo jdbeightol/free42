@@ -432,7 +432,12 @@ static const command_spec cmd_array[] =
     { /* SST_RT */     "SST\017",               4, NULL,              0x02000000, ARG_NONE,  FLAG_NONE },
     { /* WSIZE */      "WSIZE",                 5, docmd_xrom,        0x0000a7d3, ARG_NONE,  FLAG_HIDDEN },
     { /* WSIZE_T */    "WS\311Z\305?",          6, docmd_xrom,        0x0000a7d4, ARG_NONE,  FLAG_HIDDEN },
-    { /* YMD */        "YMD",                   3, docmd_ymd,         0x0000a7d5, ARG_NONE,  FLAG_NONE }
+    { /* YMD */        "YMD",                   3, docmd_ymd,         0x0000a7d5, ARG_NONE,  FLAG_NONE },
+    { /* SENTINEL */   "",                      0, NULL,              0x02000000, ARG_NONE,  FLAG_NONE },
+    /* Fraction display extension */
+    { /* FRAC */        "FRAC",                 4, docmd_frac,        0x0000a7d6, ARG_NONE, FLAG_NONE },
+    { /* SYM */         "SYM",                  3, docmd_sym,         0x0000a7d7, ARG_NONE, FLAG_NONE },
+
 };
 
 /*

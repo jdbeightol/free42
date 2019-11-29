@@ -45,6 +45,8 @@ int docmd_rcl_add(arg_struct *arg);
 int docmd_fix(arg_struct *arg);
 int docmd_sci(arg_struct *arg);
 int docmd_eng(arg_struct *arg);
+int docmd_frac(arg_struct *arg);
+int docmd_sym(arg_struct *arg);
 int docmd_all(arg_struct *arg);
 int docmd_null(arg_struct *arg);
 int docmd_asto(arg_struct *arg);

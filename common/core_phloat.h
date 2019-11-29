@@ -35,8 +35,10 @@ struct hp_string {
 
 #ifdef BCD_MATH
 #define MAX_MANT_DIGITS 34
+#define FRACTION_LIMIT 0.00000001
 #else
 #define MAX_MANT_DIGITS 16
+#define FRACTION_LIMIT 0.00001
 #endif
 
 
@@ -173,7 +175,8 @@ extern phloat NAN_PHLOAT;
 void phloat_init();
 int phloat2string(phloat d, char *buf, int buflen,
                   int base_mode, int digits, int dispmode,
-                  int thousandssep, int max_mant_digits = 12);
+                  int symdisp, int thousandssep, 
+                  int max_mant_digits = 12);
 int string2phloat(const char *buf, int buflen, phloat *d);
 
 

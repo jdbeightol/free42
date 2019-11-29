@@ -418,6 +418,10 @@
 
 #define CMD_SENTINEL    374
 
+/* Fraction display extension */
+#define CMD_FRAC        375
+#define CMD_SYM         376
+
 
 /* command_spec.argtype */
 

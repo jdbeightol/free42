@@ -243,13 +243,13 @@ const menu_spec menus[] = {
                         { 0x2000 + CMD_REALRES, 0, "" },
                         { 0x2000 + CMD_KEYASN,  0, "" },
                         { 0x2000 + CMD_LCLBL,   0, "" } } },
-    { /* MENU_DISP */ MENU_NONE, MENU_NONE, MENU_NONE,
+    { /* MENU_DISP */ MENU_NONE, MENU_DISP2, MENU_DISP2,
                       { { 0x2000 + CMD_FIX,      0, "" },
                         { 0x2000 + CMD_SCI,      0, "" },
                         { 0x2000 + CMD_ENG,      0, "" },
+                        { 0x2000 + CMD_FRAC,     0, "" },
                         { 0x2000 + CMD_ALL,      0, "" },
-                        { 0x2000 + CMD_RDXDOT,   0, "" },
-                        { 0x2000 + CMD_RDXCOMMA, 0, "" } } },
+                        { 0x2000 + CMD_SYM,      0, "" } } },
     { /* MENU_CLEAR1 */ MENU_NONE, MENU_CLEAR2, MENU_CLEAR2,
                       { { 0x1000 + CMD_CLSIGMA, 0, "" },
                         { 0x1000 + CMD_CLP,     0, "" },
@@ -522,7 +522,14 @@ const menu_spec menus[] = {
                         { 0,                 3, "ACC"  },
                         { 0x1000 + CMD_NULL, 0, ""     },
                         { 0x1000 + CMD_NULL, 0, ""     },
-                        { 0,                 1, "\003" } } }
+                        { 0,                 1, "\003" } } },
+    { /* MENU_DISP2 */ MENU_NONE, MENU_DISP, MENU_DISP,
+                      { { 0x2000 + CMD_RDXDOT,   0, "" },
+                        { 0x2000 + CMD_RDXCOMMA, 0, "" },
+                        { 0x1000 + CMD_NULL,     0, "" },
+                        { 0x1000 + CMD_NULL,     0, "" },
+                        { 0x1000 + CMD_NULL,     0, "" },
+                        { 0x1000 + CMD_NULL,     0, "" } } }
 };
 
 

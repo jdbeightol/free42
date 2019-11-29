@@ -1480,7 +1480,8 @@ static int fcn_cat[] = {
     CMD_10_POW_X, CMD_ADD,       CMD_SUB,      CMD_MUL,        CMD_DIV,     CMD_CHS,
     CMD_SIGMAADD, CMD_SIGMASUB,  CMD_SIGMAREG, CMD_SIGMAREG_T, CMD_TO_DEC,  CMD_TO_DEG,
     CMD_TO_HMS,   CMD_TO_HR,     CMD_TO_OCT,   CMD_TO_POL,     CMD_TO_RAD,  CMD_TO_REC,
-    CMD_LEFT,     CMD_UP,        CMD_DOWN,     CMD_RIGHT,      CMD_PERCENT, CMD_PERCENT_CH
+    CMD_LEFT,     CMD_UP,        CMD_DOWN,     CMD_RIGHT,      CMD_PERCENT, CMD_PERCENT_CH,
+    CMD_FRAC,     CMD_SYM
 };
 
 typedef struct {
@@ -1730,14 +1731,14 @@ void display_mem() {
 
 static int procrustean_phloat2string(phloat d, char *buf, int buflen) {
     char tbuf[100];
-    int tbuflen = phloat2string(d, tbuf, 100, 0, 0, 3,
+    int tbuflen = phloat2string(d, tbuf, 100, 0, 0, 3, 0,
                                 flags.f.thousands_separators, MAX_MANT_DIGITS);
     if (tbuflen <= buflen) {
         memcpy(buf, tbuf, tbuflen);
         return tbuflen;
     }
     if (flags.f.thousands_separators) {
-        tbuflen = phloat2string(d, tbuf, 100, 0, 0, 3, 0, MAX_MANT_DIGITS);
+        tbuflen = phloat2string(d, tbuf, 100, 0, 0, 3, 0, 0, MAX_MANT_DIGITS);
         if (tbuflen <= buflen) {
             memcpy(buf, tbuf, tbuflen);
             return tbuflen;
@@ -1756,7 +1757,7 @@ static int procrustean_phloat2string(phloat d, char *buf, int buflen) {
             buf[buflen - 1] = 26;
             return buflen;
         }
-        tbuflen = phloat2string(d, tbuf, 100, 0, MAX_MANT_DIGITS - 1, 1, 0, MAX_MANT_DIGITS);
+        tbuflen = phloat2string(d, tbuf, 100, 0, MAX_MANT_DIGITS - 1, 1, 0, 0, MAX_MANT_DIGITS);
         epos = 0;
         int zero_since = -1;
         while (epos < tbuflen && tbuf[epos] != 24) {
@@ -1802,11 +1803,11 @@ void show() {
         switch (reg_x->type) {
             case TYPE_REAL: {
                 bufptr = phloat2string(((vartype_real *) reg_x)->x, buf, 45,
-                                       2, 0, 3,
+                                       2, 0, 3, 0,
                                        flags.f.thousands_separators, MAX_MANT_DIGITS);
                 if (bufptr == 45)
                     bufptr = phloat2string(((vartype_real *) reg_x)->x, buf,
-                                           44, 2, 0, 3, 0, MAX_MANT_DIGITS);
+                                           44, 2, 0, 3, 0, 0, MAX_MANT_DIGITS);
                 if (bufptr <= 22)
                     draw_string(0, 0, buf, bufptr);
                 else {
@@ -1862,7 +1863,7 @@ void show() {
                     draw_char(5 + phloat_length(*d), 1, '"');
                 } else {
                     bufptr = phloat2string(*d, buf, 18,
-                                           0, 0, 3,
+                                           0, 0, 3, 0,
                                            flags.f.thousands_separators);
                     draw_string(4, 1, buf, bufptr);
                 }
@@ -1985,19 +1986,29 @@ void redisplay() {
                     switch (cmd_id) {
                         case CMD_FIX:
                             is_flag = flags.f.fix_or_all
-                                        && !flags.f.eng_or_all;
+                                        && !flags.f.eng_or_all
+                                        && !flags.f.frac;
                             break;
                         case CMD_SCI:
                             is_flag = !flags.f.fix_or_all
-                                        && !flags.f.eng_or_all;
+                                        && !flags.f.eng_or_all
+                                        && !flags.f.frac;
                             break;
                         case CMD_ENG:
                             is_flag = !flags.f.fix_or_all
-                                        && flags.f.eng_or_all;
+                                        && flags.f.eng_or_all
+                                        && !flags.f.frac;
                             break;
                         case CMD_ALL:
                             is_flag = flags.f.fix_or_all
-                                        && flags.f.eng_or_all;
+                                        && flags.f.eng_or_all
+                                        && !flags.f.frac;
+                            break;
+                        case CMD_FRAC:
+                            is_flag = flags.f.frac;
+                            break;
+                        case CMD_SYM:
+                            is_flag = flags.f.sym;
                             break;
                         case CMD_RDXDOT:
                             is_flag = flags.f.decimal_point;

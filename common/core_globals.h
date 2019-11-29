@@ -184,6 +184,7 @@ extern const error_spec errors[];
 #define MENU_SOLVE         61
 #define MENU_INTEG         62
 #define MENU_INTEG_PARAMS  63
+#define MENU_DISP2         64
 
 
 typedef struct {
@@ -317,6 +318,8 @@ typedef union {
         char digits_bit0;
         char fix_or_all;
         char eng_or_all;
+        char frac;
+        char sym;
         char grad;
         char rad;
         char continuous_on;

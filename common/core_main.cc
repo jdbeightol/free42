@@ -2031,7 +2031,7 @@ void core_import_programs() {
 }
 
 static int real2buf(char *buf, phloat x) {
-    int bufptr = phloat2string(x, buf, 49, 2, 0, 3, 0, MAX_MANT_DIGITS);
+    int bufptr = phloat2string(x, buf, 49, 2, 0, 3, flags.f.sym, 0, MAX_MANT_DIGITS);
     /* Convert small-caps 'E' to regular 'e' */
     for (int i = 0; i < bufptr; i++)
         if (buf[i] == 24)
@@ -2050,14 +2050,14 @@ static int complex2buf(char *buf, phloat re, phloat im, bool always_rect) {
         x = re;
         y = im;
     }
-    int bufptr = phloat2string(x, buf, 99, 2, 0, 3, 0, MAX_MANT_DIGITS);
+    int bufptr = phloat2string(x, buf, 99, 2, 0, 3, flags.f.sym, 0, MAX_MANT_DIGITS);
     if (polar) {
         string2buf(buf, 99, &bufptr, " \342\210\240 ", 5);
     } else {
         if (y >= 0)
             buf[bufptr++] = '+';
     }
-    bufptr += phloat2string(y, buf + bufptr, 99 - bufptr, 2, 0, 3, 0, MAX_MANT_DIGITS);
+    bufptr += phloat2string(y, buf + bufptr, 99 - bufptr, 2, 0, 3, flags.f.sym, 0, MAX_MANT_DIGITS);
     if (!polar)
         buf[bufptr++] = 'i';
     /* Convert small-caps 'E' to regular 'e' */
@@ -3790,7 +3790,7 @@ void fix_thousands_separators(char *buf, int *bufptr) {
         char c = buf[i];
         if (c != sep)
             buf[j++] = c;
-        if (c == dot || c == 24)
+        if (c == dot || c == 24 || c == ' ' || c == '/')
             counting_intdigits = 0;
         else if (counting_intdigits && c >= '0' && c <= '9')
             intdigits++;

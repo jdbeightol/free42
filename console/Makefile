@@ -139,14 +139,16 @@ clean: FORCE
 	rm -f `find . -type l` \
 		skin2cc skin2cc.exe skins.cc \
 		keymap2cc keymap2cc.exe keymap.cc \
-		*.o *.d *.i *.ii *.s symlinks core.*
+		*.o *.d *.i *.ii *.s symlinks core.* \
+		*.a
 
 cleaner: FORCE
 	rm -f `find . -type l` \
 		free42bin free42bin.exe free42dec free42dec.exe \
 		skin2cc skin2cc.exe skins.cc \
 		keymap2cc keymap2cc.exe keymap.cc \
-		*.o *.d *.i *.ii *.s symlinks core.*
+		*.o *.d *.i *.ii *.s symlinks core.* \
+		*.a
 
 FORCE:
 

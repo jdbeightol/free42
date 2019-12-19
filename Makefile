@@ -1,8 +1,12 @@
 build:
 	docker run -v $(PWD):/workspace -e DISPLAY=host.docker.internal:0 free42 make -C gtk -e BCD_MATH=1 AUDIO_ALSA=1
 
+build-arm:
+	docker run -v $(PWD):/workspace -e DISPLAY=host.docker.internal:0 free42 /bin/bash -c "cd console && ./armbuild"
+
 clean:
 	make -C gtk cleaner
+	make -C console cleaner
 
 dev-build:
 	docker build -t free42:latest .
